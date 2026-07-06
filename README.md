@@ -28,40 +28,6 @@ poe1-bingo/
 - 「列印 / 存 PDF」：列印樣式已另外調整過
 - 重新整理頁面會自動還原上一次的卡片與勾選進度（localStorage）
 
-## 在 GitHub Pages 上架設（新手步驟）
-
-1. 到 GitHub 建立一個新的 **public repository**，例如取名 `poe1-bingo`。
-2. 把這個資料夾裡的 `index.html` 和 `app.js` 上傳到該 repo 的根目錄：
-   - 網頁版做法：進到 repo 頁面 → **Add file → Upload files** →
-     把兩個檔案拖進去 → **Commit changes**。
-   - 或用 Git 指令：
-     ```bash
-     cd poe1-bingo
-     git init
-     git add index.html app.js
-     git commit -m "PoE1 中文賓果卡"
-     git branch -M main
-     git remote add origin https://github.com/<你的帳號>/poe1-bingo.git
-     git push -u origin main
-     ```
-3. 進到 repo 的 **Settings → Pages**。
-4. 在 **Build and deployment → Source** 選擇 **Deploy from a branch**，
-   Branch 選 `main`、資料夾選 `/(root)`，按 **Save**。
-5. 等 1～2 分鐘，GitHub 會給你一個網址，格式通常是：
-   ```
-   https://<你的帳號>.github.io/poe1-bingo/
-   ```
-   打開就能直接使用了。
-
-> 之後如果想更新內容（例如改預設清單、改配色），只要編輯檔案後
-> 重新 commit / push，GitHub Pages 會在幾分鐘內自動更新。
-
-## 自訂重點（想改就直接改檔案）
-
-- **預設項目清單**：`app.js` 最上面的 `PRESET_ITEMS` 陣列。
-- **配色**：`index.html` 的 `<style>` 區塊裡 `:root { --gold, --ember, ... }`。
-- **字型**：目前用 Google Fonts 的 Cinzel／Noto Serif TC／Noto Sans TC，
-  可在 `<head>` 裡的 `<link>` 換成你喜歡的字型。
 
 ## 免責聲明
 
