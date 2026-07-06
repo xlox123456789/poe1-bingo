@@ -73,16 +73,20 @@ const PRESET_ITEMS = [
   "手術大師與持久魔力藥劑自動化",
   "背包支援 Regex 搜尋",
   "自動釘劑",
+  "我要釣魚",
+  "我要開船",
+  "惡魔貓推薦雪寶／電蜘蛛開荒",
+  "二代探險搬過來一代",
 ];
 
 const FREE_CELL_TEXT = "Hi,Im Mark Roberts/Jonathan Rogers";
 
 const els = {};
-["titleInput","sizeSelect","freeCenter","itemsInput","countHint",
- "fillPresetBtn","clearItemsBtn","generateBtn",
- "shareBtn","shareBox","shareUrl",
- "cardTitleDisplay","cardMeta","bingoStatus","grid","banner",
- "reshuffleBtn","resetMarksBtn","exportBtn","printBtn"
+["titleInput", "sizeSelect", "freeCenter", "itemsInput", "countHint",
+  "fillPresetBtn", "clearItemsBtn", "generateBtn",
+  "shareBtn", "shareBox", "shareUrl",
+  "cardTitleDisplay", "cardMeta", "bingoStatus", "grid", "banner",
+  "reshuffleBtn", "resetMarksBtn", "exportBtn", "printBtn"
 ].forEach(id => els[id] = document.getElementById(id));
 
 let state = {
@@ -94,50 +98,50 @@ let state = {
   marks: [],      // boolean array length size*size
 };
 
-function shuffle(arr){
+function shuffle(arr) {
   const a = arr.slice();
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 }
 
-function parseItems(){
+function parseItems() {
   return els.itemsInput.value
     .split("\n")
-    .map(s=>s.trim())
+    .map(s => s.trim())
     .filter(Boolean);
 }
 
-function updateCountHint(){
-  const size = parseInt(els.sizeSelect.value,10);
+function updateCountHint() {
+  const size = parseInt(els.sizeSelect.value, 10);
   const free = els.freeCenter.checked && (size % 2 === 1);
-  const needed = size*size - (free?1:0);
+  const needed = size * size - (free ? 1 : 0);
   const have = parseItems().length;
   const hint = els.countHint;
-  if(have >= needed){
+  if (have >= needed) {
     hint.className = "count-hint";
     hint.textContent = `已輸入 ${have} 項，需要 ${needed} 項 — 足夠，多餘的會隨機保留備用。`;
   } else {
     hint.className = "count-hint bad";
-    hint.textContent = `已輸入 ${have} 項，需要 ${needed} 項 — 還少 ${needed-have} 項，產生時將自動用預設清單補足。`;
+    hint.textContent = `已輸入 ${have} 項，需要 ${needed} 項 — 還少 ${needed - have} 項，產生時將自動用預設清單補足。`;
   }
 }
 
-function buildLayout(){
-  const size = parseInt(els.sizeSelect.value,10);
+function buildLayout() {
+  const size = parseInt(els.sizeSelect.value, 10);
   const free = els.freeCenter.checked && (size % 2 === 1);
-  const needed = size*size - (free?1:0);
+  const needed = size * size - (free ? 1 : 0);
 
   let pool = parseItems();
-  if(pool.length < needed){
-    const extra = shuffle(PRESET_ITEMS.filter(p=>!pool.includes(p)));
-    let i=0;
-    while(pool.length < needed && i < extra.length){ pool.push(extra[i]); i++; }
+  if (pool.length < needed) {
+    const extra = shuffle(PRESET_ITEMS.filter(p => !pool.includes(p)));
+    let i = 0;
+    while (pool.length < needed && i < extra.length) { pool.push(extra[i]); i++; }
     // still short? repeat with numbering
-    let n=2;
-    while(pool.length < needed){
+    let n = 2;
+    while (pool.length < needed) {
       const base = PRESET_ITEMS[(pool.length) % PRESET_ITEMS.length];
       pool.push(`${base}（第${n}次）`);
       n++;
@@ -147,17 +151,17 @@ function buildLayout(){
   const cells = shuffle(chosen);
 
   const layout = [];
-  const centerIdx = Math.floor((size*size)/2);
+  const centerIdx = Math.floor((size * size) / 2);
   let ci = 0;
-  for(let i=0;i<size*size;i++){
-    if(free && i === centerIdx){ layout.push({text:FREE_CELL_TEXT, free:true}); }
-    else { layout.push({text:cells[ci], free:false}); ci++; }
+  for (let i = 0; i < size * size; i++) {
+    if (free && i === centerIdx) { layout.push({ text: FREE_CELL_TEXT, free: true }); }
+    else { layout.push({ text: cells[ci], free: false }); ci++; }
   }
   return layout;
 }
 
-function generate(){
-  const size = parseInt(els.sizeSelect.value,10);
+function generate() {
+  const size = parseInt(els.sizeSelect.value, 10);
   state.title = els.titleInput.value.trim() || "流亡黯道賓果";
   state.size = size;
   state.freeCenter = els.freeCenter.checked;
@@ -168,18 +172,18 @@ function generate(){
   render();
 }
 
-function reshuffle(){
-  if(state.layout.length === 0) return generate();
+function reshuffle() {
+  if (state.layout.length === 0) return generate();
   const size = state.size;
   const free = state.freeCenter && (size % 2 === 1);
-  const texts = state.layout.filter(c=>!c.free).map(c=>c.text);
+  const texts = state.layout.filter(c => !c.free).map(c => c.text);
   const shuffled = shuffle(texts);
-  const centerIdx = Math.floor((size*size)/2);
+  const centerIdx = Math.floor((size * size) / 2);
   const layout = [];
   let ci = 0;
-  for(let i=0;i<size*size;i++){
-    if(free && i === centerIdx){ layout.push({text:FREE_CELL_TEXT, free:true}); }
-    else { layout.push({text:shuffled[ci], free:false}); ci++; }
+  for (let i = 0; i < size * size; i++) {
+    if (free && i === centerIdx) { layout.push({ text: FREE_CELL_TEXT, free: true }); }
+    else { layout.push({ text: shuffled[ci], free: false }); ci++; }
   }
   state.layout = layout;
   state.marks = layout.map(c => !!c.free);
@@ -187,30 +191,30 @@ function reshuffle(){
   render();
 }
 
-function toggleMark(i){
-  if(state.layout[i].free) return;
+function toggleMark(i) {
+  if (state.layout[i].free) return;
   state.marks[i] = !state.marks[i];
   save();
   render(true);
 }
 
-function resetMarks(){
+function resetMarks() {
   state.marks = state.layout.map(c => !!c.free);
   save();
   render();
 }
 
-function computeWinLines(){
+function computeWinLines() {
   const size = state.size;
   const lines = [];
-  for(let r=0;r<size;r++){
-    lines.push(Array.from({length:size}, (_,c)=> r*size+c));
+  for (let r = 0; r < size; r++) {
+    lines.push(Array.from({ length: size }, (_, c) => r * size + c));
   }
-  for(let c=0;c<size;c++){
-    lines.push(Array.from({length:size}, (_,r)=> r*size+c));
+  for (let c = 0; c < size; c++) {
+    lines.push(Array.from({ length: size }, (_, r) => r * size + c));
   }
-  lines.push(Array.from({length:size}, (_,i)=> i*size+i));
-  lines.push(Array.from({length:size}, (_,i)=> i*size+(size-1-i)));
+  lines.push(Array.from({ length: size }, (_, i) => i * size + i));
+  lines.push(Array.from({ length: size }, (_, i) => i * size + (size - 1 - i)));
 
   const complete = lines.filter(line => line.every(idx => state.marks[idx]));
   return complete;
@@ -218,10 +222,10 @@ function computeWinLines(){
 
 let lastCompleteCount = 0;
 
-function render(fromToggle){
+function render(fromToggle) {
   els.cardTitleDisplay.textContent = state.title;
-  const markedCount = state.marks.filter(Boolean).length - (state.freeCenter && state.size%2===1 ? 1 : 0);
-  els.cardMeta.textContent = `${state.size} × ${state.size} ‧ 已勾選 ${Math.max(markedCount,0)} 格`;
+  const markedCount = state.marks.filter(Boolean).length - (state.freeCenter && state.size % 2 === 1 ? 1 : 0);
+  els.cardMeta.textContent = `${state.size} × ${state.size} ‧ 已勾選 ${Math.max(markedCount, 0)} 格`;
 
   els.grid.style.gridTemplateColumns = `repeat(${state.size}, 1fr)`;
   els.grid.innerHTML = "";
@@ -233,53 +237,53 @@ function render(fromToggle){
     const div = document.createElement("div");
     div.className = "cell" + (cell.free ? " free" : "") + (state.marks[i] ? " marked" : "") + (winCells.has(i) ? " win-line" : "");
     div.innerHTML = `<span class="txt">${escapeHtml(cell.text)}</span>`;
-    if(!cell.free){
+    if (!cell.free) {
       div.addEventListener("click", () => toggleMark(i));
     }
     els.grid.appendChild(div);
   });
 
-  if(winLines.length > 0){
+  if (winLines.length > 0) {
     els.bingoStatus.textContent = `已達成 ${winLines.length} 條連線！`;
   } else {
     els.bingoStatus.textContent = "";
   }
 
-  if(fromToggle && winLines.length > lastCompleteCount){
+  if (fromToggle && winLines.length > lastCompleteCount) {
     triggerBanner();
   }
   lastCompleteCount = winLines.length;
 }
 
-function triggerBanner(){
+function triggerBanner() {
   els.banner.classList.remove("show");
   void els.banner.offsetWidth;
   els.banner.classList.add("show");
 }
 
-function escapeHtml(s){
+function escapeHtml(s) {
   return s.replace(/[&<>"']/g, m => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
   }[m]));
 }
 
-function save(){
-  try{
+function save() {
+  try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }catch(e){ /* storage full or blocked, ignore */ }
+  } catch (e) { /* storage full or blocked, ignore */ }
 }
 
-function load(){
+function load() {
   // 每次開啟頁面都先清掉本機舊存檔，避免改版後卡池被舊快取蓋掉
-  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){ /* ignore */ }
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
 
   // priority 1: shared link in URL hash
   const hash = location.hash.replace(/^#/, "");
-  if(hash.startsWith("share=")){
-    try{
+  if (hash.startsWith("share=")) {
+    try {
       const json = decodeURIComponent(escape(atob(hash.slice(6))));
       const shared = JSON.parse(json);
-      if(shared && shared.title && shared.layout){
+      if (shared && shared.title && shared.layout) {
         // 新格式：直接還原格子順序，跟分享者拿到完全一樣的排列
         els.titleInput.value = shared.title;
         els.sizeSelect.value = String(shared.size || 5);
@@ -300,7 +304,7 @@ function load(){
         history.replaceState(null, "", location.pathname);
         return;
       }
-      if(shared && shared.title && shared.items){
+      if (shared && shared.title && shared.items) {
         // 舊格式相容：只有項目池，沒有固定排列（會重新洗牌，排列可能跟分享者不同）
         els.titleInput.value = shared.title;
         els.sizeSelect.value = String(shared.size || 5);
@@ -310,7 +314,7 @@ function load(){
         history.replaceState(null, "", location.pathname);
         return;
       }
-    }catch(e){ /* ignore malformed hash */ }
+    } catch (e) { /* ignore malformed hash */ }
   }
   // priority 2: 沒有分享連結時，一律用程式內最新的 PRESET_ITEMS 重新產生
   // 項目欄顯示「完整卡池」，實際格子仍會依尺寸隨機抽取所需數量
@@ -318,7 +322,7 @@ function load(){
   generate();
 }
 
-function makeShareUrl(){
+function makeShareUrl() {
   const payload = {
     title: state.title,
     size: state.size,
@@ -332,13 +336,13 @@ function makeShareUrl(){
   return url;
 }
 
-async function exportImage(){
-  if(typeof html2canvas === "undefined"){
+async function exportImage() {
+  if (typeof html2canvas === "undefined") {
     alert("圖片匯出元件載入失敗，請確認網路連線後重新整理再試一次。");
     return;
   }
   const frame = document.querySelector(".card-frame");
-  const canvas = await html2canvas(frame, {backgroundColor:"#100d0a", scale:2});
+  const canvas = await html2canvas(frame, { backgroundColor: "#100d0a", scale: 2 });
   const link = document.createElement("a");
   link.download = `${state.title || "poe1-bingo"}.png`;
   link.href = canvas.toDataURL("image/png");
