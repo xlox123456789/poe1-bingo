@@ -270,6 +270,9 @@ function save(){
 }
 
 function load(){
+  // 每次開啟頁面都先清掉本機舊存檔，避免改版後卡池被舊快取蓋掉
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){ /* ignore */ }
+
   // priority 1: shared link in URL hash
   const hash = location.hash.replace(/^#/, "");
   if(hash.startsWith("share=")){
@@ -287,23 +290,8 @@ function load(){
       }
     }catch(e){ /* ignore malformed hash */ }
   }
-  // priority 2: local saved state
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      const saved = JSON.parse(raw);
-      if(saved && saved.layout && saved.layout.length){
-        state = saved;
-        els.titleInput.value = state.title;
-        els.sizeSelect.value = String(state.size);
-        els.freeCenter.checked = state.freeCenter;
-        els.itemsInput.value = (state.items && state.items.length ? state.items : []).join("\n");
-        render();
-        return;
-      }
-    }
-  }catch(e){ /* ignore */ }
-  // priority 3: fresh default card
+  // priority 2: 沒有分享連結時，一律用程式內最新的 PRESET_ITEMS 重新產生
+  // （不再讀取本機舊存檔，這樣改版更新卡池後，使用者一開啟就會拿到新內容）
   els.itemsInput.value = shuffle(PRESET_ITEMS).slice(0, 24).join("\n");
   generate();
 }
