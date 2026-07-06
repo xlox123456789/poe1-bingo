@@ -86,7 +86,7 @@ const els = {};
   "fillPresetBtn", "clearItemsBtn", "generateBtn",
   "shareBtn", "shareBox", "shareUrl",
   "cardTitleDisplay", "cardMeta", "bingoStatus", "grid", "banner",
-  "reshuffleBtn", "resetMarksBtn", "exportBtn", "printBtn"
+  "editModeBtn", "editHint", "reshuffleBtn", "resetMarksBtn", "exportBtn", "printBtn"
 ].forEach(id => els[id] = document.getElementById(id));
 
 let state = {
@@ -204,6 +204,44 @@ function resetMarks() {
   render();
 }
 
+/* ---- 編輯模式：拖曳／點兩格互換位置 ---- */
+let editMode = false;
+let dragSrcIndex = null;
+let selectedIndex = null;
+
+function toggleEditMode() {
+  editMode = !editMode;
+  dragSrcIndex = null;
+  selectedIndex = null;
+  els.editModeBtn.textContent = editMode ? "結束編輯" : "編輯模式";
+  els.editModeBtn.classList.toggle("active", editMode);
+  els.grid.classList.toggle("editing", editMode);
+  els.editHint.style.display = editMode ? "block" : "none";
+  render();
+}
+
+function swapCells(a, b) {
+  if (a === b) return;
+  if (state.layout[a].free || state.layout[b].free) return;
+  const tmpCell = state.layout[a];
+  state.layout[a] = state.layout[b];
+  state.layout[b] = tmpCell;
+  const tmpMark = state.marks[a];
+  state.marks[a] = state.marks[b];
+  state.marks[b] = tmpMark;
+  save();
+  render();
+}
+
+function handleEditTap(i) {
+  if (state.layout[i].free) return;
+  if (selectedIndex === null) { selectedIndex = i; render(); return; }
+  if (selectedIndex === i) { selectedIndex = null; render(); return; }
+  const from = selectedIndex;
+  selectedIndex = null;
+  swapCells(from, i);
+}
+
 function computeWinLines() {
   const size = state.size;
   const lines = [];
@@ -235,10 +273,35 @@ function render(fromToggle) {
 
   state.layout.forEach((cell, i) => {
     const div = document.createElement("div");
-    div.className = "cell" + (cell.free ? " free" : "") + (state.marks[i] ? " marked" : "") + (winCells.has(i) ? " win-line" : "");
+    div.className = "cell" + (cell.free ? " free" : "") + (state.marks[i] ? " marked" : "") + (winCells.has(i) ? " win-line" : "") + (editMode && selectedIndex === i ? " selected" : "");
     div.innerHTML = `<span class="txt">${escapeHtml(cell.text)}</span>`;
+
     if (!cell.free) {
-      div.addEventListener("click", () => toggleMark(i));
+      if (editMode) {
+        div.draggable = true;
+        div.addEventListener("dragstart", () => {
+          dragSrcIndex = i;
+          div.classList.add("dragging");
+        });
+        div.addEventListener("dragend", () => {
+          div.classList.remove("dragging");
+          document.querySelectorAll(".cell.drag-over").forEach(el => el.classList.remove("drag-over"));
+        });
+        div.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          if (!cell.free) div.classList.add("drag-over");
+        });
+        div.addEventListener("dragleave", () => div.classList.remove("drag-over"));
+        div.addEventListener("drop", (e) => {
+          e.preventDefault();
+          div.classList.remove("drag-over");
+          if (dragSrcIndex !== null) swapCells(dragSrcIndex, i);
+          dragSrcIndex = null;
+        });
+        div.addEventListener("click", () => handleEditTap(i));
+      } else {
+        div.addEventListener("click", () => toggleMark(i));
+      }
     }
     els.grid.appendChild(div);
   });
@@ -363,6 +426,7 @@ els.clearItemsBtn.addEventListener("click", () => {
   updateCountHint();
 });
 els.generateBtn.addEventListener("click", generate);
+els.editModeBtn.addEventListener("click", toggleEditMode);
 els.reshuffleBtn.addEventListener("click", reshuffle);
 els.resetMarksBtn.addEventListener("click", resetMarks);
 els.exportBtn.addEventListener("click", exportImage);
