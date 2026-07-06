@@ -1,4 +1,5 @@
-# 流亡黯道3.29賓果（PoE1 中文賓果卡產生器）
+# 流亡黯道3.29賓果（PoE1 中文賓果卡產生器） 
+作者:夏烏拉 
 https://xlox123456789.github.io/poe1-bingo/
 
 自製的 **Path of Exile 1** 中文版賓果卡小工具。輸入你對新聯盟的預測項目，
@@ -34,3 +35,4 @@ poe1-bingo/
 
 本專案為粉絲自製的非商業小工具，與 Grinding Gear Games 及
 《Path of Exile》官方無任何關聯。
+
