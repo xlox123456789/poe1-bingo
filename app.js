@@ -279,7 +279,29 @@ function load(){
     try{
       const json = decodeURIComponent(escape(atob(hash.slice(6))));
       const shared = JSON.parse(json);
+      if(shared && shared.title && shared.layout){
+        // 新格式：直接還原格子順序，跟分享者拿到完全一樣的排列
+        els.titleInput.value = shared.title;
+        els.sizeSelect.value = String(shared.size || 5);
+        els.freeCenter.checked = !!shared.freeCenter;
+
+        state.title = shared.title;
+        state.size = shared.size || 5;
+        state.freeCenter = !!shared.freeCenter;
+        state.layout = shared.layout.map(t => t === null
+          ? { text: FREE_CELL_TEXT, free: true }
+          : { text: t, free: false });
+        state.items = shared.layout.filter(t => t !== null);
+        state.marks = state.layout.map(c => !!c.free);
+        els.itemsInput.value = state.items.join("\n");
+
+        save();
+        render();
+        history.replaceState(null, "", location.pathname);
+        return;
+      }
       if(shared && shared.title && shared.items){
+        // 舊格式相容：只有項目池，沒有固定排列（會重新洗牌，排列可能跟分享者不同）
         els.titleInput.value = shared.title;
         els.sizeSelect.value = String(shared.size || 5);
         els.freeCenter.checked = !!shared.freeCenter;
@@ -291,8 +313,8 @@ function load(){
     }catch(e){ /* ignore malformed hash */ }
   }
   // priority 2: 沒有分享連結時，一律用程式內最新的 PRESET_ITEMS 重新產生
-  // （不再讀取本機舊存檔，這樣改版更新卡池後，使用者一開啟就會拿到新內容）
-  els.itemsInput.value = shuffle(PRESET_ITEMS).slice(0, 24).join("\n");
+  // 項目欄顯示「完整卡池」，實際格子仍會依尺寸隨機抽取所需數量
+  els.itemsInput.value = PRESET_ITEMS.join("\n");
   generate();
 }
 
@@ -301,7 +323,8 @@ function makeShareUrl(){
     title: state.title,
     size: state.size,
     freeCenter: state.freeCenter,
-    items: state.items.length ? state.items : state.layout.filter(c=>!c.free).map(c=>c.text),
+    // 直接帶「實際格子順序」，free 格用 null 標記，確保對方打開時排列完全一致
+    layout: state.layout.map(c => c.free ? null : c.text),
   };
   const json = JSON.stringify(payload);
   const b64 = btoa(unescape(encodeURIComponent(json)));
